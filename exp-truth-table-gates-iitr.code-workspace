@@ -6,5 +6,10 @@
 	],
 	"settings": {
 		"editor.aiStats.enabled": true
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.makefile-tools"
+		]
 	}
 }

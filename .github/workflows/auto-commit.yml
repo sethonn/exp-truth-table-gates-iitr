@@ -1,0 +1,63 @@
+---
+name: Auto Commit
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_message:
+        description: 'Commit message'
+        required: false
+        default: 'chore(ci): automated commit'
+  schedule:
+    - cron: '0 0 * * *'  # daily at midnight UTC
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git status --porcelain | grep -q .; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Node.js (for script compatibility)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+        if: steps.check_changes.outputs.has_changes == 'true'
+
+      - name: Make auto-commit script executable
+        run: chmod +x scripts/auto-commit.sh
+        if: steps.check_changes.outputs.has_changes == 'true'
+
+      - name: Run auto-commit script
+        env:
+          GIT_COMMIT_MSG: ${{ github.event.inputs.commit_message }}
+        run: |
+          MSG="${GIT_COMMIT_MSG:-chore(ci): automated commit}"
+          ./scripts/auto-commit.sh "$MSG"
+        if: steps.check_changes.outputs.has_changes == 'true'
+
+      - name: Show last commits
+        run: git --no-pager log -n 5 --oneline || true
+
+      - name: Skip notice
+        run: echo "✓ No changes detected. Skipping commit."
+        if: steps.check_changes.outputs.has_changes == 'false'

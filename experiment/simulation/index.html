@@ -1,57 +1,387 @@
-<html>
-    <head>
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logic Gates - Truth Table Simulator</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <!-- Simulation scripts end-->
-     <style>
-body {font-family: Arial;
-background-color: #ECEFF4;}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      min-height: 100vh;
+    }
 
+    /* Header/Hero Section */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-</style>
-    </head>
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
 
-            <h2 align="center">Verification and interpretation of truth table for AND, OR, NOT, NAND, NOR, Ex-OR, Ex-NOR gates.</h2><br><br>
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.95;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
 
-           <h2 align="center">Simulation
-        </h2><br><br>
-         
-      
-          <center>
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="AND/Simulator.html">AND Gate</a>&nbsp;&nbsp;&nbsp;
-         
-          
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="OR/Simulator.html" >OR Gate</a>&nbsp;&nbsp;&nbsp;
-         
-          
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="NOT/Simulator.html" >NOT Gate</a>&nbsp;&nbsp;&nbsp;
-         
-          
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="NAND/Simulator.html">NAND Gate</a>&nbsp;&nbsp;&nbsp;
-         
-         
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="NOR/Simulator.html" >NOR Gate</a><br><br>
-         
- 
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="XOR/Simulator.html" >Ex-OR Gate</a>&nbsp;&nbsp;&nbsp;
-          
-          
-          <a style="width:150px; height:50px;" class="btn btn-primary" href="XNOR/Simulator.html" >Ex-NOR Gate</a></center>
-         
-            <!--S-->
-            <!--Simulation content goes here -->
+    /* Main Container */
+    .container-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
 
+    /* Aim Section */
+    .aim-section {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
 
+    .aim-section h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
 
-        <!-- /.content -->
+    .aim-section p {
+      font-size: 1em;
+      line-height: 1.8;
+      color: #555;
+    }
+
+    /* Gates Section */
+    .gates-section {
+      margin-bottom: 40px;
+    }
+
+    .gates-section h2 {
+      color: white;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2em;
+      font-weight: 700;
+    }
+
+    /* Gates Grid */
+    .gates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    /* Gate Card */
+    .gate-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .gate-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .gate-card h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 1.5em;
+      font-weight: 600;
+    }
+
+    .gate-card p {
+      color: #666;
+      font-size: 0.95em;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    /* Gate Icon/Symbol */
+    .gate-symbol {
+      font-size: 2.5em;
+      margin: 15px 0;
+      color: #764ba2;
+    }
+
+    /* Button */
+    .btn-gate {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 0.95em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-gate:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      transform: scale(1.05);
+      color: white;
+      text-decoration: none;
+    }
+
+    .btn-gate:active {
+      transform: scale(0.98);
+    }
+
+    /* Donate button in header */
+    #donate-btn {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 0.95em;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(0, 0, 0, 0.2);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 40px;
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 0.95em;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8em;
+      }
+
+      .header p {
+        font-size: 0.95em;
+      }
+
+      .gates-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .gates-section h2 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="header">
+    <a id="donate-btn" class="btn-gate" href="#">Donate</a>
+    <h1>⚡ Logic Gates Truth Table Simulator</h1>
+    <p>Interactive simulation and verification of digital logic gates</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container-main">
+    <!-- Aim Section -->
+    <div class="aim-section">
+      <h2>📋 Experiment Objective</h2>
+      <p>To verify and interpret the logic and truth table for logic gates including OR gate using Diode Resistance
+        Logic (DRL), NOT gate using Transistor, and AND, NAND, NOR, Ex-OR & Ex-NOR gates using Resistor Transistor Logic
+        (RTL). This simulator allows you to explore the behavior and truth tables for all fundamental logic gates.</p>
+    </div>
+
+    <!-- Gates Section -->
+    <div class="gates-section">
+      <h2>🔌 Explore Logic Gates</h2>
+
+      <!-- Gates Grid -->
+      <div class="gates-grid">
+        <!-- AND Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">∧</div>
+          <h3>AND Gate</h3>
+          <p>Output is HIGH (1) only when ALL inputs are HIGH. Used for logic multiplication.</p>
+          <a href="AND/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
+
+        <!-- OR Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">∨</div>
+          <h3>OR Gate</h3>
+          <p>Output is HIGH (1) when ANY input is HIGH. Used for logic addition.</p>
+          <a href="OR/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
+
+        <!-- NOT Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">¬</div>
+          <h3>NOT Gate</h3>
+          <p>Output is inverted. HIGH becomes LOW and LOW becomes HIGH. Logic inverter.</p>
+          <a href="NOT/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
+
+        <!-- NAND Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">⊼</div>
+          <h3>NAND Gate</h3>
+          <p>Output is LOW (0) only when ALL inputs are HIGH. Inverted AND gate.</p>
+          <a href="NAND/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
+
+        <!-- NOR Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">⊽</div>
+          <h3>NOR Gate</h3>
+          <p>Output is HIGH (1) only when ALL inputs are LOW. Inverted OR gate.</p>
+          <a href="NOR/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
+
+        <!-- XOR Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">⊕</div>
+          <h3>Ex-OR Gate (XOR)</h3>
+          <p>Output is HIGH when inputs are different. Exclusive OR operation.</p>
+          <a href="XOR/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
+
+        <!-- XNOR Gate -->
+        <div class="gate-card">
+          <div class="gate-symbol">⊙</div>
+          <h3>Ex-NOR Gate (XNOR)</h3>
+          <p>Output is HIGH when inputs are same. Inverted XOR gate.</p>
+          <a href="XNOR/Simulator.html" class="btn-gate">Launch Simulator</a>
+        </div>
       </div>
-     
-        
-    </body>
-</html>
+    </div>
+  </div>
 
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 Logic Gates Truth Table Simulator | IITR Virtual Lab</p>
+  </footer>
+  <!-- Razorpay Checkout -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    // Server URL where the Razorpay example server runs.
+    // Change this if your server is hosted elsewhere.
+    const SERVER_URL = 'http://localhost:3000';
+
+    async function openRazorpay() {
+      const amountStr = prompt('Enter donation amount in INR (e.g. 50)');
+      if (!amountStr) return;
+      const amount = parseFloat(amountStr);
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+
+      try {
+        // Create order on server
+        const res = await fetch(`${SERVER_URL}/create-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Unable to create order on server');
+        }
+
+        const data = await res.json();
+        // server returns { order, key_id }
+        const order = data.order || data;
+        const key = data.key_id || 'rzp_test_replace_with_your_key';
+
+        const options = {
+          key: key,
+          amount: order.amount,
+          currency: order.currency,
+          name: 'IITR Virtual Lab',
+          description: 'Support the Logic Gates Simulator',
+          order_id: order.id,
+          handler: async function (response) {
+            // Send payment details back to server for verification
+            try {
+              const verifyRes = await fetch(`${SERVER_URL}/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(response)
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyRes.ok && verifyData.ok) {
+                alert('Payment successful and verified on server. Thank you!');
+              } else {
+                alert('Payment completed but server verification failed: ' + (verifyData.message || JSON.stringify(verifyData)));
+              }
+            } catch (err) {
+              console.error('Verify error', err);
+              alert('Payment completed but verification request failed. Check console.');
+            }
+          },
+          prefill: { name: '', email: '' },
+          theme: { color: '#764ba2' }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } catch (err) {
+        console.error('Error creating order', err);
+        alert('Unable to start payment: ' + err.message);
+      }
+    }
+
+    document.getElementById('donate-btn').addEventListener('click', function (e) {
+      e.preventDefault();
+      openRazorpay();
+    });
+  </script>
+</body>
+
+
+
+<!-- /.content -->
+</div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Razorpay Demo - IITR Virtual Lab</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f6f8fb;
+            color: #333;
+            padding: 24px
+        }
+
+        .card {
+            max-width: 520px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08)
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0 0 8px
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px
+        }
+
+        input[type=number] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px
+        }
+
+        button {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border: none;
+            background: #764ba2;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer
+        }
+
+        #status {
+            margin-top: 12px;
+            padding: 10px;
+            background: #f1f3f6;
+            border-radius: 6px
+        }
+
+        small.note {
+            display: block;
+            margin-top: 8px;
+            color: #666
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Donate — Logic Gates Simulator</h1>
+        <p>Demo page that creates a Razorpay order on the server and verifies the payment signature.</p>
+
+        <label for="amount">Amount (INR)</label>
+        <input id="amount" type="number" min="1" value="50" />
+
+        <button id="pay">Donate</button>
+
+        <div id="status">Status: idle</div>
+        <small class="note">Server demo is bundled with this repo at
+            <code>experiment/server/razorpay-server</code>.</small>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        const statusEl = document.getElementById('status');
+        const payBtn = document.getElementById('pay');
+        const amountInput = document.getElementById('amount');
+
+        const SERVER = '';// same origin when served by server
+
+        function setStatus(msg) { statusEl.textContent = 'Status: ' + msg; }
+
+        // On load, check server config to ensure Razorpay keys are available
+        (async function checkConfig() {
+            try {
+                const res = await fetch('/config');
+                if (!res.ok) throw new Error('config fetch failed');
+                const cfg = await res.json();
+                if (!cfg || !cfg.razorpay || !cfg.razorpay.hasKeys) {
+                    // Disable UI and show message
+                    payBtn.disabled = true;
+                    payBtn.style.opacity = '0.6';
+                    setStatus('Razorpay not configured on server. Please set RAZORPAY keys.');
+                    const note = document.createElement('div');
+                    note.style.marginTop = '10px';
+                    note.style.color = '#b44343';
+                    note.textContent = 'Demo unavailable: server Razorpay credentials are not configured.';
+                    document.querySelector('.card').appendChild(note);
+                } else {
+                    setStatus('ready');
+                }
+                // Show admin link if metrics token is configured on server
+                if (cfg && cfg.metrics && cfg.metrics.token_present) {
+                    const adminLink = document.createElement('a');
+                    adminLink.href = '/admin.html';
+                    adminLink.textContent = 'Admin';
+                    adminLink.style.display = 'inline-block';
+                    adminLink.style.marginTop = '12px';
+                    adminLink.style.padding = '8px 12px';
+                    adminLink.style.background = '#2b7a78';
+                    adminLink.style.color = '#fff';
+                    adminLink.style.borderRadius = '6px';
+                    adminLink.style.textDecoration = 'none';
+                    document.querySelector('.card').appendChild(adminLink);
+                }
+            } catch (err) {
+                console.error('config check failed', err);
+                setStatus('unable to verify server config');
+            }
+        })();
+
+        async function createOrder(amount) {
+            setStatus('creating order...');
+            const res = await fetch('/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount })
+            });
+            if (!res.ok) throw new Error('create-order failed');
+            return res.json();
+        }
+
+        async function verifyPayment(payload) {
+            setStatus('verifying payment on server...');
+            const res = await fetch('/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            return res.json();
+        }
+
+        document.getElementById('pay').addEventListener('click', async function () {
+            try {
+                const amount = parseFloat(document.getElementById('amount').value);
+                if (isNaN(amount) || amount <= 0) return alert('Enter valid amount');
+
+                const { order, key_id } = await createOrder(amount);
+                setStatus('opening checkout...');
+
+                const options = {
+                    key: key_id, // provided by server
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'IITR Virtual Lab',
+                    description: 'Support the Logic Gates Simulator',
+                    order_id: order.id,
+                    handler: async function (response) {
+                        try {
+                            const verify = await verifyPayment(response);
+                            if (verify && verify.ok) {
+                                setStatus('Payment verified — thank you!');
+                                alert('Payment successful and verified.');
+                            } else {
+                                setStatus('Payment completed but verification failed');
+                                alert('Verification failed: ' + (verify.message || JSON.stringify(verify)));
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            setStatus('Verification request failed');
+                            alert('Verification request failed — check server logs');
+                        }
+                    },
+                    modal: { escape: true },
+                    prefill: {},
+                    theme: { color: '#764ba2' }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    console.error('payment.failed', response);
+                    setStatus('Payment failed');
+                    alert('Payment failed: ' + (response.error && response.error.description));
+                });
+                rzp.open();
+            } catch (err) {
+                console.error(err);
+                setStatus('error: ' + err.message);
+                alert('Error: ' + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>
