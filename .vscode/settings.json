@@ -1,0 +1,10 @@
+{
+    "editor.mouseWheelZoom": true,
+    "editor.formatOnPaste": true,
+    "editor.aiStats.enabled": true,
+    "editor.allowVariableFontsInAccessibilityMode": true,
+    "editor.autoIndentOnPaste": true,
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "editor.codeActions.triggerOnFocusChange": true,
+    "editor.columnSelection": true
+}
